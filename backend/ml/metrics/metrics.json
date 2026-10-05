@@ -1,0 +1,53 @@
+{
+  "model_type": "Random Forest Classifier",
+  "n_estimators": 100,
+  "features": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+  ],
+  "classes_count": 22,
+  "crops": [
+    "Apple",
+    "Banana",
+    "Blackgram",
+    "Chickpea",
+    "Coconut",
+    "Coffee",
+    "Cotton",
+    "Grapes",
+    "Jute",
+    "Kidneybeans",
+    "Lentil",
+    "Maize",
+    "Mango",
+    "Mothbeans",
+    "Mungbean",
+    "Muskmelon",
+    "Orange",
+    "Papaya",
+    "Pigeonpeas",
+    "Pomegranate",
+    "Rice",
+    "Watermelon"
+  ],
+  "train_samples": 1760,
+  "test_samples": 440,
+  "accuracy": 99.55,
+  "precision": 99.57,
+  "recall": 99.55,
+  "f1_score": 99.55,
+  "feature_importance": {
+    "N": 0.1129,
+    "P": 0.1382,
+    "K": 0.1619,
+    "temperature": 0.0843,
+    "humidity": 0.2233,
+    "ph": 0.0549,
+    "rainfall": 0.2245
+  }
+}

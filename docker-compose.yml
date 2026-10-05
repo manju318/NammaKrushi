@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: esykrushi_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://esyuser:esypassword@db:5432/esykrushi_db
+      - SECRET_KEY=esykrushi_super_secret_production_key_2026_vtu
+      - JWT_SECRET_KEY=esykrushi_jwt_secret_signing_token_998877_secure
+      - DEMO_MODE=true
+    volumes:
+      - ./uploads:/app/uploads
+      - ./reports:/app/reports
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: esykrushi_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15-alpine
+    container_name: esykrushi_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=esyuser
+      - POSTGRES_PASSWORD=esypassword
+      - POSTGRES_DB=esykrushi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

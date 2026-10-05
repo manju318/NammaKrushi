@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     port = int(os.environ.get('PORT', 5000))
     print(f"\n========================================================")
-    print(f"  🌱 ESYKRUSHI AgriTech Platform Backend Server")
+    print(f"  [ESYKRUSHI] AgriTech Platform Backend Server")
     print(f"  API Listening on: http://127.0.0.1:{port}")
     print(f"  Demo Farmer:      farmer@esykrushi.com / Farmer@123")
     print(f"  Demo Buyer:       buyer@esykrushi.com  / Buyer@123")

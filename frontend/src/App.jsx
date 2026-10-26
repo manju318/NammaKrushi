@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { CartProvider } from './contexts/CartContext';
 import MainLayout from './layouts/MainLayout';
 
@@ -49,53 +50,55 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 export default function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+      <LanguageProvider>
+        <CartProvider>
+          <Router>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            {/* Authenticated Application Routes inside MainLayout */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <MainLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/crop-planner" element={<CropPlannerPage />} />
-              <Route path="/weather" element={<WeatherPage />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/journal" element={<JournalPage />} />
-              <Route path="/inventory" element={<InventoryPage />} />
-              <Route path="/expenses" element={<ExpensePage />} />
-              <Route path="/assistant" element={<AssistantPage />} />
-              <Route path="/marketplace" element={<MarketplacePage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-
-              {/* Admin Protected Route */}
+              {/* Authenticated Application Routes inside MainLayout */}
               <Route
-                path="/admin"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <AdminPage />
+                  <ProtectedRoute>
+                    <MainLayout />
                   </ProtectedRoute>
                 }
-              />
-            </Route>
+              >
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/crop-planner" element={<CropPlannerPage />} />
+                <Route path="/weather" element={<WeatherPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/journal" element={<JournalPage />} />
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/expenses" element={<ExpensePage />} />
+                <Route path="/assistant" element={<AssistantPage />} />
+                <Route path="/marketplace" element={<MarketplacePage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </CartProvider>
+                {/* Admin Protected Route */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </CartProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

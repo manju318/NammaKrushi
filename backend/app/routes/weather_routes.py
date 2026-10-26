@@ -4,10 +4,19 @@ Provides current climate conditions, 7-day forecast, and geocoding.
 """
 
 from flask import Blueprint, request
-from app.services.weather_service import get_current_weather, get_weather_forecast, geocode_location
+from app.services.weather_service import get_current_weather, get_weather_forecast, geocode_location, reverse_geocode
 from app.utils.response import success_response, error_response
 
 weather_bp = Blueprint('weather', __name__)
+
+@weather_bp.route('/reverse', methods=['GET'])
+def reverse():
+    lat = request.args.get('lat', type=float)
+    lon = request.args.get('lon', type=float)
+    if lat is None or lon is None:
+        return error_response(code="MISSING_COORDINATES", message="lat and lon parameters are required", status_code=400)
+    loc_name = reverse_geocode(lat, lon)
+    return success_response(data={"name": loc_name, "latitude": lat, "longitude": lon}, message="Reverse geocoding successful")
 
 @weather_bp.route('/current', methods=['GET'])
 def current():

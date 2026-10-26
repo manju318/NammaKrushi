@@ -16,8 +16,6 @@ crop_bp = Blueprint('crop', __name__)
 @login_required
 def predict():
     user = g.current_user
-    if user.role != 'farmer' and user.role != 'admin':
-        return error_response(code="FORBIDDEN", message="Crop prediction is tailored for farmers", status_code=403)
 
     data = request.get_json() or {}
 

@@ -75,10 +75,23 @@ def chat():
     if data.get('crop_stage'): farm_context["crop_stage"] = data['crop_stage']
     if data.get('soil_type'): farm_context["soil_type"] = data['soil_type']
 
+    language = data.get('language', 'en')
+
+    # Fetch last 6 messages from this conversation for multi-turn chat memory
+    history_records = AIMessage.query.filter_by(conversation_id=conversation.id).order_by(AIMessage.created_at.asc()).all()
+    # Exclude the message we just added
+    history_records = [m for m in history_records if m.id != user_msg_record.id][-6:]
+    conversation_history = [
+        {"role": "user" if m.role == "user" else "model", "parts": [m.message_text]}
+        for m in history_records
+    ]
+
     # Generate response
     response_data = generate_agricultural_response(
         user_message=user_message,
-        farm_context=farm_context
+        farm_context=farm_context,
+        conversation_history=conversation_history,
+        language=language
     )
 
     # Save Assistant message
@@ -98,6 +111,7 @@ def chat():
             "citations": response_data.get("citations", []),
             "provider": response_data.get("provider"),
             "is_grounded": response_data.get("is_grounded", False),
+            "language": response_data.get("language", language),
             "created_at": assistant_msg_record.created_at.isoformat()
         },
         message="AI response generated"

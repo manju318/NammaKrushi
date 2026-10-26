@@ -23,6 +23,9 @@ def generate_access_token(user: User) -> str:
     return jwt.encode(payload, secret, algorithm='HS256')
 
 def decode_access_token(token: str):
+    return decode_jwt_token(token)
+
+def decode_jwt_token(token: str):
     secret = current_app.config.get('JWT_SECRET_KEY', 'default-jwt-secret')
     try:
         payload = jwt.decode(token, secret, algorithms=['HS256'])

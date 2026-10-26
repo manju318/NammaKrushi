@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { weatherService } from '../services/weatherService';
 import { farmService } from '../services/farmService';
 import {
@@ -26,18 +27,21 @@ import {
   ChevronDown,
   CheckCircle2,
   AlertTriangle,
-  Award
+  Award,
+  Languages
 } from 'lucide-react';
 
 export default function MainLayout() {
   const { user, logout, isFarmer, isAdmin, isVerifiedSeller } = useAuth();
   const { totalItems } = useCart();
+  const { language, setLanguage, t, supportedLanguages, currentLanguageObj } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [liveWeather, setLiveWeather] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
@@ -67,25 +71,42 @@ export default function MainLayout() {
     fetchNotifs();
   }, [user]);
 
-  const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'Crop Planner & ML', path: '/crop-planner', icon: Sprout },
-    { label: 'Weather Forecast', path: '/weather', icon: CloudSun },
-    { label: 'Farm Calendar', path: '/calendar', icon: CalendarDays },
-    { label: 'Farm Journal', path: '/journal', icon: BookOpen },
-    { label: 'Inventory', path: '/inventory', icon: Boxes },
-    { label: 'Expenses', path: '/expenses', icon: PieChart },
-    { label: 'AI Assistant', path: '/assistant', icon: Bot },
-    { label: 'Marketplace', path: '/marketplace', icon: Store },
-    { label: 'Orders', path: '/orders', icon: ShoppingBag },
-    { label: 'Seasonal Reports', path: '/reports', icon: FileText },
-  ];
+  let navItems = [];
 
-  if (isAdmin) {
-    navItems.push({ label: 'Admin Portal', path: '/admin', icon: ShieldCheck });
+  if (user?.role === 'buyer') {
+    navItems = [
+      { label: t('dashboard', 'Buyer Dashboard'), path: '/dashboard', icon: LayoutDashboard },
+      { label: t('marketplace', 'Browse Marketplace'), path: '/marketplace', icon: Store },
+      { label: t('cart', 'Shopping Cart'), path: '/cart', icon: ShoppingCart },
+      { label: t('orders', 'My Orders & Invoices'), path: '/orders', icon: ShoppingBag },
+      { label: t('assistant', 'AI Advisory'), path: '/assistant', icon: Bot },
+      { label: t('settings', 'Profile & Settings'), path: '/settings', icon: Settings },
+    ];
+  } else if (isAdmin) {
+    navItems = [
+      { label: t('admin', 'Admin Governance Portal'), path: '/admin', icon: ShieldCheck },
+      { label: t('marketplace', 'Marketplace View'), path: '/marketplace', icon: Store },
+      { label: t('orders', 'Platform Orders'), path: '/orders', icon: ShoppingBag },
+      { label: t('assistant', 'AI Assistant'), path: '/assistant', icon: Bot },
+      { label: t('settings', 'Settings'), path: '/settings', icon: Settings },
+    ];
+  } else {
+    // Farmer / Agri-producer navigation
+    navItems = [
+      { label: t('dashboard', 'Farmer Command Center'), path: '/dashboard', icon: LayoutDashboard },
+      { label: t('marketplace', 'Marketplace & Produce'), path: '/marketplace', icon: Store },
+      { label: t('cropPlanner', 'Crop Planner & Markets'), path: '/crop-planner', icon: Sprout },
+      { label: t('weather', 'Weather Forecast'), path: '/weather', icon: CloudSun },
+      { label: t('calendar', 'Farm Calendar'), path: '/calendar', icon: CalendarDays },
+      { label: t('journal', 'Farm Journal'), path: '/journal', icon: BookOpen },
+      { label: t('inventory', 'Inventory'), path: '/inventory', icon: Boxes },
+      { label: t('expenses', 'Expenses & Profits'), path: '/expenses', icon: PieChart },
+      { label: t('orders', 'Incoming Orders'), path: '/orders', icon: ShoppingBag },
+      { label: t('reports', 'Seasonal Reports'), path: '/reports', icon: FileText },
+      { label: t('assistant', 'AI Agronomist'), path: '/assistant', icon: Bot },
+      { label: t('settings', 'Settings & RTC'), path: '/settings', icon: Settings },
+    ];
   }
-
-  navItems.push({ label: 'Settings', path: '/settings', icon: Settings });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -128,7 +149,7 @@ export default function MainLayout() {
           </div>
 
           {/* Right Header Badges */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Live Weather Widget Chip */}
             {liveWeather && (
               <Link
@@ -142,6 +163,54 @@ export default function MainLayout() {
                 <span className="text-forest-700">{liveWeather.condition}</span>
               </Link>
             )}
+
+            {/* Language Selector Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setLangDropdownOpen(!langDropdownOpen);
+                  setProfileDropdownOpen(false);
+                  setNotifDropdownOpen(false);
+                }}
+                className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition border border-slate-200 shadow-xs"
+                title={t('selectLanguage', 'Select Language')}
+              >
+                <Languages className="w-4 h-4 text-forest-600 shrink-0" />
+                <span className="text-sm leading-none">{currentLanguageObj?.flag}</span>
+                <span className="font-bold text-slate-800">{currentLanguageObj?.native}</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {langDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50">
+                  <div className="px-3 py-1 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {t('selectLanguage', 'Language')} / ಭಾಷೆ
+                  </div>
+                  <div className="py-1">
+                    {supportedLanguages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLanguage(lang.code);
+                          setLangDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs transition ${
+                          language === lang.code
+                            ? 'bg-forest-50 text-forest-800 font-bold'
+                            : 'text-slate-700 hover:bg-slate-50 font-medium'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className="text-base">{lang.flag}</span>
+                          <span>{lang.native}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">({lang.name})</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Marketplace Cart Button */}
             <Link
@@ -160,7 +229,11 @@ export default function MainLayout() {
             {/* Notifications Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
+                onClick={() => {
+                  setNotifDropdownOpen(!notifDropdownOpen);
+                  setLangDropdownOpen(false);
+                  setProfileDropdownOpen(false);
+                }}
                 className="relative p-2 rounded-full text-slate-600 hover:text-forest-700 hover:bg-slate-100 transition"
                 title="Notifications"
               >
@@ -173,19 +246,19 @@ export default function MainLayout() {
               {notifDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50">
                   <div className="flex items-center justify-between px-4 pb-2 border-b border-slate-100">
-                    <span className="font-semibold text-sm text-slate-800">Alerts & Notifications</span>
+                    <span className="font-semibold text-sm text-slate-800">{t('alerts', 'Alerts & Notifications')}</span>
                     {unreadCount > 0 && (
                       <button
                         onClick={handleMarkAllRead}
                         className="text-xs text-forest-600 hover:text-forest-700 font-medium"
                       >
-                        Mark all read
+                        {t('markAllRead', 'Mark all read')}
                       </button>
                     )}
                   </div>
                   <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
                     {notifications.length === 0 ? (
-                      <p className="text-xs text-slate-500 text-center py-6">No new notifications</p>
+                      <p className="text-xs text-slate-500 text-center py-6">{t('noNotifications', 'No new notifications')}</p>
                     ) : (
                       notifications.slice(0, 5).map((n) => (
                         <div key={n.id} className={`p-3 text-xs hover:bg-slate-50 transition ${!n.is_read ? 'bg-forest-50/50' : ''}`}>
@@ -205,7 +278,7 @@ export default function MainLayout() {
                       onClick={() => { setNotifDropdownOpen(false); navigate('/calendar'); }}
                       className="text-xs text-forest-600 font-medium hover:underline"
                     >
-                      View Farm Tasks & Calendar →
+                      {t('viewFarmTasks', 'View Farm Tasks & Calendar →')}
                     </button>
                   </div>
                 </div>
@@ -215,7 +288,11 @@ export default function MainLayout() {
             {/* Profile Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                onClick={() => {
+                  setProfileDropdownOpen(!profileDropdownOpen);
+                  setLangDropdownOpen(false);
+                  setNotifDropdownOpen(false);
+                }}
                 className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-slate-100 transition"
               >
                 <div className="w-8 h-8 rounded-full bg-forest-600 text-white flex items-center justify-center font-bold text-xs">
@@ -225,7 +302,7 @@ export default function MainLayout() {
                   <div className="font-semibold text-slate-800 flex items-center gap-1">
                     {user?.full_name?.split(' ')[0]}
                     {isVerifiedSeller && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-forest-600 inline" title="Verified Seller" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-forest-600 inline" title={t('verifiedSeller', 'Verified Seller')} />
                     )}
                   </div>
                   <div className="text-slate-400 capitalize">{user?.role || 'Guest'}</div>
@@ -240,7 +317,7 @@ export default function MainLayout() {
                     <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
                     {isVerifiedSeller && (
                       <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md mt-1 font-medium border border-emerald-200">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Seller
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> {t('verifiedSeller', 'Verified Seller')}
                       </span>
                     )}
                   </div>
@@ -250,7 +327,7 @@ export default function MainLayout() {
                     className="flex items-center space-x-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
                   >
                     <Settings className="w-4 h-4 text-slate-400" />
-                    <span>Profile & Verification</span>
+                    <span>{t('settings', 'Profile & Settings')}</span>
                   </Link>
                   <button
                     onClick={() => {
@@ -261,7 +338,7 @@ export default function MainLayout() {
                     className="w-full flex items-center space-x-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50 text-left"
                   >
                     <LogOut className="w-4 h-4 text-red-500" />
-                    <span>Sign Out</span>
+                    <span>{t('signOut', 'Sign Out')}</span>
                   </button>
                 </div>
               )}
@@ -280,7 +357,7 @@ export default function MainLayout() {
         >
           <div className="p-4 space-y-1 overflow-y-auto">
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
-              Farm Management
+              {t('farmManagement', 'Farm Management')}
             </div>
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -308,10 +385,10 @@ export default function MainLayout() {
             <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs shadow-xs">
               <div className="flex items-center space-x-2 text-forest-800 font-semibold mb-1">
                 <Award className="w-4 h-4 text-harvest-500" />
-                <span>Final Year Project</span>
+                <span>{t('projectBadgeTitle', 'Final Year Project')}</span>
               </div>
               <p className="text-[11px] text-slate-500 leading-tight">
-                AI/ML Crop Engine • PostgreSQL • RAG Assistant • Direct APMC Marketplace
+                {t('projectBadgeDesc', 'AI/ML Crop Engine • PostgreSQL • RAG Assistant • Direct APMC Marketplace')}
               </p>
             </div>
           </div>

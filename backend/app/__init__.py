@@ -52,6 +52,9 @@ def create_app(config_class=Config):
     from app.routes.report_routes import report_bp
     from app.routes.admin_routes import admin_bp
     from app.routes.notification_routes import notification_bp
+    from app.routes.call_routes import call_bp
+    from app.routes.request_routes import request_bp
+    from app.routes.mandi_routes import mandi_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(weather_bp, url_prefix='/api/weather')
@@ -68,6 +71,9 @@ def create_app(config_class=Config):
     app.register_blueprint(report_bp, url_prefix='/api/reports')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(notification_bp, url_prefix='/api/notifications')
+    app.register_blueprint(call_bp, url_prefix='/api/calls')
+    app.register_blueprint(request_bp, url_prefix='/api/requests')
+    app.register_blueprint(mandi_bp, url_prefix='/api/mandis')
 
     # Centralized Error Handlers
     @app.errorhandler(400)

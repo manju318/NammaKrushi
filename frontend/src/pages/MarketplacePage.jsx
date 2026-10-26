@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { marketplaceService } from '../services/marketplaceService';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import RequestToFarmerModal from '../components/RequestToFarmerModal';
 import {
   Store,
   Search,
@@ -13,12 +15,14 @@ import {
   MapPin,
   Calendar,
   X,
-  AlertCircle
+  AlertCircle,
+  Send
 } from 'lucide-react';
 
 export default function MarketplacePage() {
   const { addToCart } = useCart();
   const { user, isFarmer } = useAuth();
+  const { t } = useLanguage();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +31,7 @@ export default function MarketplacePage() {
   const [sortBy, setSortBy] = useState('newest');
   const [addedNotice, setAddedNotice] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [requestProduct, setRequestProduct] = useState(null);
 
   // New product form (for farmers)
   const [name, setName] = useState('');
@@ -70,8 +75,13 @@ export default function MarketplacePage() {
     setTimeout(() => setAddedNotice(null), 3000);
   };
 
+  const [formError, setFormError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
+    setFormError(null);
+    setSubmitting(true);
     try {
       const payload = {
         name,
@@ -87,10 +97,15 @@ export default function MarketplacePage() {
         setModalOpen(false);
         setName('');
         setDescription('');
+        setAddedNotice(`Successfully published "${payload.name}" to marketplace!`);
+        setTimeout(() => setAddedNotice(null), 4000);
         loadProducts();
       }
     } catch (err) {
       console.error(err);
+      setFormError(err.message || 'Failed to publish listing. Please verify inputs.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -101,10 +116,10 @@ export default function MarketplacePage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
             <Store className="w-7 h-7 text-forest-600" />
-            <span>Direct Farmer-to-Buyer Marketplace</span>
+            <span>{t('marketplaceHeading', 'Direct Farmer-to-Buyer Marketplace')}</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Zero intermediaries. Buy fresh produce straight from verified Indian farmers with server-verified payments.
+            {t('marketplaceSub', 'Zero intermediaries. Buy fresh produce straight from verified Indian farmers with server-verified payments.')}
           </p>
         </div>
 
@@ -139,7 +154,7 @@ export default function MarketplacePage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search grains, pulses, fruits, vegetables..."
+              placeholder={t('searchProduce', 'Search grains, pulses, fruits, vegetables...')}
               className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-forest-500"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -239,13 +254,23 @@ export default function MarketplacePage() {
                     <span className="text-[11px] text-slate-400 font-medium">/{p.unit}</span>
                   </div>
 
-                  <button
-                    onClick={() => handleAddToCart(p)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-forest-600 hover:bg-forest-700 text-white font-bold text-xs rounded-xl shadow-xs transition"
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>Add to Cart</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setRequestProduct(p)}
+                      className="inline-flex items-center gap-1 px-2.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-[11px] rounded-xl transition shadow-2xs"
+                      title="Direct Purchase Request to this Farmer"
+                    >
+                      <Send className="w-3 h-3 text-amber-600" />
+                      <span>{t('request', 'Request')}</span>
+                    </button>
+                    <button
+                      onClick={() => handleAddToCart(p)}
+                      className="inline-flex items-center gap-1 px-3 py-2 bg-forest-600 hover:bg-forest-700 text-white font-bold text-xs rounded-xl shadow-xs transition"
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <span>{t('addToCart', 'Add')}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -265,6 +290,12 @@ export default function MarketplacePage() {
             </div>
 
             <form onSubmit={handleCreateProduct} className="space-y-3">
+              {formError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-semibold text-slate-700">Produce Name</label>
                 <input
@@ -372,6 +403,18 @@ export default function MarketplacePage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Product-Specific Buyer Request to Farmer Modal */}
+      {requestProduct && (
+        <RequestToFarmerModal
+          product={requestProduct}
+          onClose={() => setRequestProduct(null)}
+          onSuccess={(req) => {
+            setAddedNotice(`Purchase request ${req.request_number} sent to farmer ${requestProduct.seller_name}!`);
+            setTimeout(() => setAddedNotice(null), 4000);
+          }}
+        />
       )}
     </div>
   );

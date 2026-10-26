@@ -74,6 +74,32 @@ def geocode_location(query: str):
     }]
 
 
+def reverse_geocode(lat: float, lon: float):
+    """
+    Reverse geocodes latitude/longitude to a human-readable location name
+    using BigDataCloud/Open-Meteo or nearest Indian district centroid.
+    """
+    try:
+        url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={lat}&longitude={lon}&localityLanguage=en"
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            parts = []
+            if data.get("locality"):
+                parts.append(data.get("locality"))
+            elif data.get("city"):
+                parts.append(data.get("city"))
+            if data.get("principalSubdivision"):
+                parts.append(data.get("principalSubdivision"))
+            if parts:
+                return ", ".join(parts)
+    except Exception as ex:
+        print(f"[WeatherService] Reverse geocode error: {ex}")
+
+    # Fallback to closest preset or generic name
+    return f"{round(lat, 3)}°N, {round(lon, 3)}°E"
+
+
 def get_current_weather(lat: float, lon: float, location_name: str = None):
     """
     Retrieves current weather conditions with 15-minute caching.

@@ -44,6 +44,7 @@ class Config:
     PAYMENT_GATEWAY = os.getenv('PAYMENT_GATEWAY', 'simulated')
     RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_esykrushi_demo')
     RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'rzp_test_secret_demo')
+    RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
 
     # Uploads & Reports
     UPLOAD_FOLDER = os.path.join(os.path.dirname(backend_dir), 'uploads')

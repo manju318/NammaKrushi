@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from app import create_app, db
 from app.models.user import User, FarmerProfile, BuyerProfile, VerifiedSeller
 from app.models.farm import Farm, Crop, Task, Journal, Inventory, Expense
-from app.models.marketplace import Product, Order, OrderItem, Payment
+from app.models.marketplace import Product, Order, OrderItem, Payment, FarmerPaymentDestination
 from app.models.notification import Notification
 
 def seed():
@@ -220,7 +220,21 @@ def seed():
         exp4 = Expense(farm_id=farm.id, crop_id=crop2.id, category="Irrigation", amount=1500.0, expense_date=today - timedelta(days=10), payment_method="Cash", notes="Drip lateral repair and dripper cleaning")
         db.session.add_all([exp1, exp2, exp3, exp4])
 
-        # 10. Direct Marketplace Products
+        # 9.5 Farmer Payment Destination
+        dest1 = FarmerPaymentDestination(
+            farmer_id=farmer_profile.id,
+            destination_type="upi",
+            upi_id="ramesh.gowda@okaxis",
+            account_number_masked="******4589",
+            ifsc_code="SBIN0001234",
+            account_holder_name="Ramesh Gowda",
+            bank_name="State Bank of India - Mandya Main Branch",
+            is_verified=True,
+            verification_status="Verified"
+        )
+        db.session.add(dest1)
+
+        # 10. Direct Marketplace Products with GPS Evidence
         p1 = Product(
             seller_id=farmer_profile.id,
             name="Organic Sona Masoori Rice (Aged 1 Year)",
@@ -232,8 +246,17 @@ def seed():
             harvest_date=today - timedelta(days=60),
             farm_location="Pandavapura, Mandya, Karnataka",
             image_url="https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80",
+            approval_status="Approved",
             is_approved=True,
-            is_active=True
+            is_active=True,
+            crop_quality="Grade A - Premium",
+            delivery_options="Farm Pickup, Mandi Transport",
+            location_latitude=12.5230,
+            location_longitude=76.8967,
+            location_source="exif",
+            location_accuracy=5.0,
+            location_distance_km=0.2,
+            location_status="Verified"
         )
         p2 = Product(
             seller_id=farmer_profile.id,
@@ -246,8 +269,17 @@ def seed():
             harvest_date=today - timedelta(days=2),
             farm_location="Mandya, Karnataka",
             image_url="https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=80",
+            approval_status="Approved",
             is_approved=True,
-            is_active=True
+            is_active=True,
+            crop_quality="Grade A - Premium",
+            delivery_options="Farm Pickup, Local Delivery",
+            location_latitude=12.5245,
+            location_longitude=76.8980,
+            location_source="exif",
+            location_accuracy=5.0,
+            location_distance_km=0.3,
+            location_status="Verified"
         )
         p3 = Product(
             seller_id=farmer_profile.id,
@@ -260,8 +292,18 @@ def seed():
             harvest_date=today - timedelta(days=1),
             farm_location="Bengaluru Rural / Channapatna",
             image_url="https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=600&q=80",
+            approval_status="Approved",
             is_approved=True,
-            is_active=True
+            is_active=True,
+            crop_quality="Organic Certified",
+            delivery_options="Farm Pickup, Express Cold-Chain",
+            location_latitude=12.8210,
+            location_longitude=77.3450,
+            location_source="browser_device",
+            location_accuracy=18.0,
+            location_distance_km=4.5,
+            location_status="Warning",
+            location_flags='["Coordinates captured via device browser geolocation (no embedded EXIF)"]'
         )
         p4 = Product(
             seller_id=farmer_profile.id,
@@ -274,10 +316,43 @@ def seed():
             harvest_date=today - timedelta(days=25),
             farm_location="Dharwad, Karnataka",
             image_url="https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=600&q=80",
+            approval_status="Approved",
             is_approved=True,
-            is_active=True
+            is_active=True,
+            crop_quality="Grade A - Premium",
+            delivery_options="Mandi Transport",
+            location_latitude=15.4589,
+            location_longitude=75.0078,
+            location_source="exif",
+            location_accuracy=6.0,
+            location_distance_km=1.2,
+            location_status="Verified"
         )
-        db.session.add_all([p1, p2, p3, p4])
+        # 10.1 Product Pending Admin Review
+        p5_pending = Product(
+            seller_id=farmer_profile.id,
+            name="Byadagi Dried Red Chillies (New Crop)",
+            category="Spices",
+            description="Authentic deep-red Byadagi chillies with low pungency and high color value. Sun dried on clean tarpaulins.",
+            price_per_unit=275.0,
+            unit="kg",
+            available_quantity=150.0,
+            harvest_date=today - timedelta(days=5),
+            farm_location="Byadagi, Haveri, Karnataka",
+            image_url="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80",
+            approval_status="Pending Review",
+            is_approved=False,
+            is_active=True,
+            crop_quality="Grade A - Premium",
+            delivery_options="Mandi Transport",
+            location_latitude=14.6782,
+            location_longitude=75.4879,
+            location_source="browser_device",
+            location_accuracy=12.0,
+            location_status="Warning",
+            location_flags='["Coordinates recorded via device browser geolocation. Awaiting admin review."]'
+        )
+        db.session.add_all([p1, p2, p3, p4, p5_pending])
         db.session.flush()
 
         # 11. Sample Verified Order

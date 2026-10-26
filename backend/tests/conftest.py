@@ -25,6 +25,8 @@ class TestConfig:
     SECRET_KEY = 'test-secret-key-super-secure-esykrushi-2026'
     JWT_SECRET_KEY = 'test-jwt-secret-key-32-bytes-long-super-secure-2026'
     DEMO_MODE = True
+    GEMINI_API_KEY = ''
+    OPENAI_API_KEY = ''
     UPLOAD_FOLDER = os.path.join(backend_dir, 'tests', 'uploads')
     REPORTS_FOLDER = os.path.join(backend_dir, 'tests', 'reports')
 

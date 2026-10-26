@@ -22,5 +22,9 @@ export const weatherService = {
 
   geocode: async (query) => {
     return api.get('/weather/geocode', { params: { query } });
+  },
+
+  reverseGeocode: async (lat, lon) => {
+    return api.get('/weather/reverse', { params: { lat, lon } });
   }
 };
